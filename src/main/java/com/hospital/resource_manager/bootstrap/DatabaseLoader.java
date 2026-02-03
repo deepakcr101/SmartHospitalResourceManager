@@ -3,9 +3,11 @@ package com.hospital.resource_manager.bootstrap;
 import com.hospital.resource_manager.domain.Doctor;
 import com.hospital.resource_manager.domain.Equipment;
 import com.hospital.resource_manager.domain.Procedure;
+import com.hospital.resource_manager.domain.Room;
 import com.hospital.resource_manager.repository.DoctorRepository;
 import com.hospital.resource_manager.repository.EquipmentRepository;
 import com.hospital.resource_manager.repository.ProcedureRepository;
+import com.hospital.resource_manager.repository.RoomRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +21,7 @@ public class DatabaseLoader {
     @Bean
     CommandLineRunner initDatabase(DoctorRepository doctorRepo,
                                    ProcedureRepository procedureRepo,
-                                   EquipmentRepository equipmentRepo) {
+                                   EquipmentRepository equipmentRepo,RoomRepository roomRepo) {
         return args -> {
             // 1. CLEAR DATABASE (Start Fresh)
             System.out.println("🧹 Cleaning Database...");
@@ -71,6 +73,28 @@ public class DatabaseLoader {
             drHouse.getKnownProcedures().add(heartSurgery);
             drHouse.getKnownProcedures().add(brainScan);
 
+            //define room
+            Room otRoom=new Room();
+            otRoom.setName("Operating Theatre 1");
+            otRoom.setType("Surgery");
+            otRoom.setOccupied(false);
+            //this room is suitable for heart surgery
+            otRoom.addSuitability(heartSurgery);
+
+            Room otRoom2=new Room();
+            otRoom2.setName("Operating Theatre 2");
+            otRoom2.setType("Surgery");
+            otRoom2.setOccupied(false);
+            otRoom2.addSuitability(heartSurgery);
+
+            Room mriRoom=new Room();
+            mriRoom.setName("Radiology Room B");
+            mriRoom.setType("Imaging");
+            mriRoom.setOccupied(false);
+            mriRoom.addSuitability(brainScan);
+
+            roomRepo.saveAll(Arrays.asList(otRoom,otRoom2,mriRoom));
+            System.out.println("Rooms added to the graph");
             // 5. SAVE EVERYTHING (The "Big Bang")
             doctorRepo.saveAll(Arrays.asList(drStrange, drHouse));
 
