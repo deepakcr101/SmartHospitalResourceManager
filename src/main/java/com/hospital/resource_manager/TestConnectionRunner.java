@@ -16,7 +16,7 @@ public class TestConnectionRunner {
 			try(var session = driver.session()){
 				String query = "CALL dbms.components() YIELD versions UNWIND versions AS version " +
 			               "RETURN version LIMIT 1";
-			String version = session.run(query).single().get("version").asString();
+			    String version = session.run(query).single().get("version").asString();
 
 
 				System.out.println("Connection Successful"+ version);
