@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -23,10 +24,10 @@ public class AdminTasksController {
     }
 
     @PostMapping("/addDoctor")
-    public Doctor addDoctor(@RequestBody Doctor doctor) {
-         dataUpdationService.add
-         return doctor;
-    }
+        @PreAuthorize("hasRole('ADMIN')")
+        public Doctor addDoctor(@RequestBody Doctor doctor) {
+            return dataUpdationService.addDoctor(doctor);
+        }
 
     @PostMapping("/addPatient")
     public Patient addPatient(@RequestBody Patient patient) {
