@@ -3,6 +3,7 @@ package com.hospital.resource_manager.service;
 import com.hospital.resource_manager.domain.Doctor;
 import com.hospital.resource_manager.domain.Equipment;
 import com.hospital.resource_manager.domain.Patient;
+import com.hospital.resource_manager.domain.Procedure;
 import com.hospital.resource_manager.domain.Room;
 import com.hospital.resource_manager.repository.DoctorRepository;
 import com.hospital.resource_manager.repository.EquipmentRepository;
@@ -26,10 +27,10 @@ public class DataUpdationService {
     private final EquipmentRepository equipmentRepo;
 
     public DataUpdationService(PatientRepository patientRepo,
-                              ProcedureRepository procedureRepo,
-                              DoctorRepository doctorRepo,
-                              RoomRepository roomRepo,
-                              EquipmentRepository equipmentRepo) {
+            ProcedureRepository procedureRepo,
+            DoctorRepository doctorRepo,
+            RoomRepository roomRepo,
+            EquipmentRepository equipmentRepo) {
         this.patientRepo = patientRepo;
         this.procedureRepo = procedureRepo;
         this.doctorRepo = doctorRepo;
@@ -64,5 +65,39 @@ public class DataUpdationService {
             e.setStatus(status);
             return equipmentRepo.save(e);
         });
+    }
+
+    // --- Admin CRUD Operations ---
+
+    public void deleteDoctor(Long id) {
+        doctorRepo.deleteById(id);
+    }
+
+    public Room addRoom(Room room) {
+        return roomRepo.save(room);
+    }
+
+    public void deleteRoom(Long id) {
+        roomRepo.deleteById(id);
+    }
+
+    public Equipment addEquipment(Equipment equipment) {
+        return equipmentRepo.save(equipment);
+    }
+
+    public void deleteEquipment(Long id) {
+        equipmentRepo.deleteById(id);
+    }
+
+    public Procedure addProcedure(Procedure procedure) {
+        return procedureRepo.save(procedure);
+    }
+
+    public void deleteProcedure(Long id) {
+        procedureRepo.deleteById(id);
+    }
+
+    public void deletePatient(Long id) {
+        patientRepo.deleteById(id);
     }
 }

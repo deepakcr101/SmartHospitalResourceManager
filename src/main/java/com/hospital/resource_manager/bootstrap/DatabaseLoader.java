@@ -8,9 +8,12 @@ import com.hospital.resource_manager.repository.DoctorRepository;
 import com.hospital.resource_manager.repository.EquipmentRepository;
 import com.hospital.resource_manager.repository.ProcedureRepository;
 import com.hospital.resource_manager.repository.RoomRepository;
+import com.hospital.resource_manager.repository.UserRepository;
+import com.hospital.resource_manager.domain.User;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,14 +23,19 @@ public class DatabaseLoader {
 
     @Bean
     CommandLineRunner initDatabase(DoctorRepository doctorRepo,
-                                   ProcedureRepository procedureRepo,
-                                   EquipmentRepository equipmentRepo,RoomRepository roomRepo) {
+            ProcedureRepository procedureRepo,
+            EquipmentRepository equipmentRepo,
+            RoomRepository roomRepo,
+            UserRepository userRepo,
+            PasswordEncoder passwordEncoder) {
         return args -> {
             // 1. CLEAR DATABASE (Start Fresh)
+            System.out.println("🧹 Cleaning Database...");
             System.out.println("🧹 Cleaning Database...");
             doctorRepo.deleteAll();
             procedureRepo.deleteAll();
             equipmentRepo.deleteAll();
+            userRepo.deleteAll();
 
             // 2. CREATE EQUIPMENT (The "Assets")
             Equipment mri = new Equipment();
@@ -54,7 +62,8 @@ public class DatabaseLoader {
             brainScan.setDurationMinutes(45);
             brainScan.getRequiredEquipment().add(mri); // Needs MRI
 
-            // Save procedures (Cascading isn't always automatic depending on config, better to be explicit)
+            // Save procedures (Cascading isn't always automatic depending on config, better
+            // to be explicit)
             procedureRepo.saveAll(Arrays.asList(heartSurgery, brainScan));
 
             // 4. CREATE DOCTORS (The "Talent")
@@ -73,30 +82,43 @@ public class DatabaseLoader {
             drHouse.getKnownProcedures().add(heartSurgery);
             drHouse.getKnownProcedures().add(brainScan);
 
-            //define room
-            Room otRoom=new Room();
+            // define room
+            Room otRoom = new Room();
             otRoom.setName("Operating Theatre 1");
             otRoom.setType("Surgery");
             otRoom.setOccupied(false);
-            //this room is suitable for heart surgery
+            // this room is suitable for heart surgery
             otRoom.addSuitability(heartSurgery);
 
-            Room otRoom2=new Room();
+            Room otRoom2 = new Room();
             otRoom2.setName("Operating Theatre 2");
             otRoom2.setType("Surgery");
             otRoom2.setOccupied(false);
             otRoom2.addSuitability(heartSurgery);
 
-            Room mriRoom=new Room();
+            Room mriRoom = new Room();
             mriRoom.setName("Radiology Room B");
             mriRoom.setType("Imaging");
             mriRoom.setOccupied(false);
             mriRoom.addSuitability(brainScan);
 
-            roomRepo.saveAll(Arrays.asList(otRoom,otRoom2,mriRoom));
+            roomRepo.saveAll(Arrays.asList(otRoom, otRoom2, mriRoom));
             System.out.println("Rooms added to the graph");
             // 5. SAVE EVERYTHING (The "Big Bang")
             doctorRepo.saveAll(Arrays.asList(drStrange, drHouse));
+
+            // 6. CREATE USERS
+            User admin = new User();
+            admin.setUsername("admin");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.getRoles().add("ROLE_ADMIN");
+
+            User staff = new User();
+            staff.setUsername("staff");
+            staff.setPassword(passwordEncoder.encode("staff123"));
+            staff.getRoles().add("ROLE_STAFF");
+
+            userRepo.saveAll(Arrays.asList(admin, staff));
 
             System.out.println("✅ Database Seeded with Graph Data!");
         };

@@ -22,6 +22,7 @@ public class HospitalController {
     }
 
     @PostMapping("/schedule")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN','STAFF','PATIENT')")
     public ResponseEntity<?> schedulePatient(@RequestBody ScheduleRequest request) {
         logger.debug("Received schedule request for patient: {}", request.getPatientName());
         try {
@@ -35,54 +36,52 @@ public class HospitalController {
     }
 
     @PostMapping("/schedule-with-fallback")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN','STAFF','PATIENT')")
     public ResponseEntity<SchedulingResponseDto> schedulePatientWithFallback(@RequestBody ScheduleRequest request) {
         logger.debug("Received fallback schedule request for patient: {}", request.getPatientName());
-        
+
         try {
             // Step 1: Try primary doctor
             Patient scheduledPatient = schedulingService.schedulePatient(request);
-            logger.info("Patient {} scheduled with primary doctor: {}", 
-                request.getPatientName(), scheduledPatient.getAssignedDoctor().getName());
-            
+            logger.info("Patient {} scheduled with primary doctor: {}",
+                    request.getPatientName(), scheduledPatient.getAssignedDoctor().getName());
+
             return ResponseEntity.ok(new SchedulingResponseDto(
-                true,
-                scheduledPatient,
-                "Successfully scheduled with primary doctor",
-                scheduledPatient.getAssignedDoctor(),
-                false
-            ));
+                    true,
+                    scheduledPatient,
+                    "Successfully scheduled with primary doctor",
+                    scheduledPatient.getAssignedDoctor(),
+                    false));
         } catch (RuntimeException primaryException) {
-            logger.warn("Primary doctor scheduling failed for patient {}. Attempting substitute...", 
-                request.getPatientName());
-            
+            logger.warn("Primary doctor scheduling failed for patient {}. Attempting substitute...",
+                    request.getPatientName());
+
             try {
                 // Step 2: Try with substitute doctor (null means try all available)
                 Patient fallbackPatient = schedulingService.schedulePatientWithFallback(request, -1L);
-                logger.info("Patient {} scheduled with SUBSTITUTE doctor: {}", 
-                    request.getPatientName(), fallbackPatient.getAssignedDoctor().getName());
-                
+                logger.info("Patient {} scheduled with SUBSTITUTE doctor: {}",
+                        request.getPatientName(), fallbackPatient.getAssignedDoctor().getName());
+
                 return ResponseEntity.ok(new SchedulingResponseDto(
-                    true,
-                    fallbackPatient,
-                    "Scheduled with substitute doctor due to primary doctor unavailability",
-                    fallbackPatient.getAssignedDoctor(),
-                    true
-                ));
+                        true,
+                        fallbackPatient,
+                        "Scheduled with substitute doctor due to primary doctor unavailability",
+                        fallbackPatient.getAssignedDoctor(),
+                        true));
             } catch (RuntimeException fallbackException) {
-                logger.error("Fallback scheduling also failed for patient {}: {}", 
-                    request.getPatientName(), fallbackException.getMessage());
-                
+                logger.error("Fallback scheduling also failed for patient {}: {}",
+                        request.getPatientName(), fallbackException.getMessage());
+
                 return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(new SchedulingResponseDto(
-                        false,
-                        null,
-                        "Primary doctor unavailable and no substitute found. Primary error: " + 
-                            primaryException.getMessage() + ". Fallback error: " + 
-                            fallbackException.getMessage(),
-                        null,
-                        false
-                    ));
+                        .status(HttpStatus.CONFLICT)
+                        .body(new SchedulingResponseDto(
+                                false,
+                                null,
+                                "Primary doctor unavailable and no substitute found. Primary error: " +
+                                        primaryException.getMessage() + ". Fallback error: " +
+                                        fallbackException.getMessage(),
+                                null,
+                                false));
             }
         }
     }
