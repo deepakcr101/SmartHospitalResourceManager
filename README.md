@@ -73,4 +73,3 @@ For detailed architecture diagrams (System Overview, Domain Model, Scheduling Fl
 | `POST` | `/api/admin/add-equipment` | Register new equipment. |
 
 ---
-*Created as a learning project for Advanced Agentic Coding.*
