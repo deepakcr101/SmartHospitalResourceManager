@@ -3,13 +3,14 @@
 ## 1. System Architecture Overview
 ```mermaid
 graph TD
-    Client[REST API Clients<br/>(Postman, Frontend, Mobile)] -->|HTTP/JSON| SpringBoot
-    subgraph SpringBoot [Spring Boot 4.0.2 Application]
+    Client["REST API Clients<br/>(Postman, Frontend, Mobile)"] -->|HTTP/JSON| SpringBoot
+    
+    subgraph SpringBoot ["Spring Boot 4.0.2 Application"]
         direction TB
         subgraph Presentation [Presentation Layer]
-            HC[HospitalController<br/>/api/hospital]
-            VC[VerificationController<br/>/api/verify]
-            AC[AuthController<br/>/auth]
+            HC["HospitalController<br/>/api/hospital"]
+            VC["VerificationController<br/>/api/verify"]
+            AC["AuthController<br/>/auth"]
         end
         subgraph Business [Business Logic Layer]
             SS[Scheduling Service]
@@ -25,7 +26,7 @@ graph TD
         Business --> DataAccess
     end
     
-    DataAccess -->|Spring Data Neo4j| Neo4j[(Neo4j Graph Database<br/>Nodes & Relationships)]
+    DataAccess -->|Spring Data Neo4j| Neo4j[("Neo4j Graph Database<br/>(Nodes & Relationships)")]
 ```
 
 ## 2. Domain Model (Entity Relationship)
